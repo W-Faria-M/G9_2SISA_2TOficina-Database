@@ -55,7 +55,8 @@ create table usuario (
 );
 
 create table veiculo (
-	placa varchar(10) primary key,
+	id int primary key auto_increment,
+	placa varchar(10),
 	fkUsuario int not null,
 	marca varchar(45) not null,
 	modelo varchar(45) not null,
@@ -127,12 +128,12 @@ create table servico_agendado (
 create table comanda (
 	id int auto_increment primary key,
 	fkAgendamento int not null,
-	fkVeiculo varchar(10) not null,
+	fkVeiculo int not null,
 	data_comanda timestamp not null,
 	fkStatus int not null,
 	observacao varchar(256),
 	foreign key (fkAgendamento) references agendamento(id),
-	foreign key (fkVeiculo) references veiculo(placa),
+	foreign key (fkVeiculo) references veiculo(id),
 	foreign key (fkStatus) references status_comanda(id)
 );
 
@@ -252,23 +253,32 @@ insert into item (nome, eh_padrao, fkCategoriaItem) values
 insert into logradouro (tipo) values
 ('Rua'),
 ('Avenida'),
-('Travessa');
+('Travessa'),
+('Alameda');
 
 -- endereco
 insert into endereco (fkLogradouro, nome_logradouro, num_logradouro, cidade, estado, bairro, cep, complemento) values
 (1, 'das Flores', 123, 'São Paulo', 'SP', 'Centro', '01001000', 'Apto 101'),
+(2, 'Atlântica', 456, 'Rio de Janeiro', 'RJ', 'Copacabana', '22070000', 'Bloco B'),
 (2, 'Paulista', 1000, 'São Paulo', 'SP', 'Bela Vista', '01310000', null),
-(3, 'Independência', 45, 'Campinas', 'SP', 'Jardim Progresso', '13000000', 'Casa');
+(3, 'Independência', 45, 'Campinas', 'SP', 'Jardim Progresso', '13000000', 'Casa'),
+(1, 'Engenheiro Mesquita Sampaio', 1024, 'São Paulo', 'SP', 'Morumbi', '04711000', null),
+(4, 'Alameda das Palmeiras', 78, 'Belo Horizonte', 'MG', 'Savassi', '30140071', null);
 
 -- usuario
 insert into usuario (fkEndereco, fkTipoUsuario, nome, sobrenome, telefone, email, senha, data_cadastro, sexo, data_nasc) values
-(1, 1, 'João', 'Silva', '11999999999', 'joao.silva@gmail.com', 'senha123', current_timestamp, null, null),
-(2, 2, 'Diego', 'dos Santos', '11988888888', 'diego@gmail.com', 'senha123', current_timestamp, 'Masculino', '2006-08-15'),
-(3, 3, 'Gianluca', 'Macedo', '11977777777', 'gian@gmail.com', 'senha123', current_timestamp, 'Masculino', '2005-05-19');
+(4, 1, 'João', 'Silva', '11938472651', 'joao.silva@gmail.com', 'senha123', current_timestamp, null, null),
+(1, 1, 'Regina', 'Castro', '11957843260', 'regina.castro@gmail.com', 'senha123', current_timestamp, 'Feminino', '1992-08-15'),
+(3, 1, 'Carlos', 'Oliveira', '11984716295', 'carlos.oliveira@gmail.com', 'senha123', current_timestamp, 'Masculino', '1985-02-27'),
+(2, 2, 'Diego', 'dos Santos', '11963574820', 'diego.2toficina@gmail.com', 'senha123', current_timestamp, 'Masculino', '2006-08-15'),
+(6, 3, 'Gianluca', 'Macedo', '11927036481', 'gian.2toficina@gmail.com', 'senha123', current_timestamp, 'Masculino', '2005-05-19');
 
 -- veiculo
 insert into veiculo (placa, fkUsuario, marca, modelo, ano, km) values
-('ABC1234', 1, 'Honda', 'CB500X', 2022, 12300);
+('ABC1234', 1, 'Honda', 'CB500X', 2022, 12300),
+('REG5678', 2, 'Yamaha', 'Factor 150', 2020, 21500),
+('CAR9012', 3, 'Honda', 'CG 160', 2021, 14700);
+
 
 -- agenda_dia
 insert into agenda_dia (data, fkHorarioPadrao, disponivel) values
@@ -285,7 +295,7 @@ insert into servico_agendado (fkAgendamento, fkServico) values
 
 -- comanda
 insert into comanda (fkAgendamento, fkVeiculo, data_comanda, fkStatus, observacao) values
-(1, 'ABC1234', current_timestamp, 1, null);
+(1, 1, current_timestamp, 1, null);
 
 -- item_servico
 insert into item_servico (id, fkServico, fkItem) values
@@ -317,7 +327,7 @@ select
 	u.nome,
 	u.sobrenome,
 	tu.tipo as tipo_usuario,
-	e.nome_logradouro,
+	concat(l.tipo, ' ', e.nome_logradouro) as logradouro_completo,
 	e.num_logradouro,
 	e.bairro,
 	e.cidade,
@@ -325,7 +335,8 @@ select
 	e.cep
 from usuario u
 join tipo_usuario tu on u.fkTipoUsuario = tu.id
-join endereco e on u.fkEndereco = e.id;
+join endereco e on u.fkEndereco = e.id
+join logradouro l on e.fkLogradouro = l.id;
 
 -- Listar veículos de um usuário específico (ex: id = 1)
 select 
