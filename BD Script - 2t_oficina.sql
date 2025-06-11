@@ -104,9 +104,9 @@ create table agendamento (
 );
 
 create table servico_agendado (
+	id int primary key auto_increment,
 	fk_agendamento int,
 	fk_servico int,
-	primary key (fk_agendamento, fk_servico),
 	foreign key (fk_agendamento) references agendamento(id),
 	foreign key (fk_servico) references servico(id)
 );
@@ -197,6 +197,8 @@ insert into servico_agendado (fk_agendamento, fk_servico) values
 -- ---------- FIM DO SCRIPT DE POPULAÇÃO DE DADOS (INSERTS) ---------- --
 
 -- ---------- INÍCIO DOS SCRIPTS DE CONSULTAS E VIEWS (SELECTS) ---------- --
+
+select * from agendamento;
 
 -- Listar todos os usuários com tipo e endereço
 create view vw_usuarios_completos as
