@@ -187,7 +187,7 @@ insert into veiculo (placa, fk_usuario, marca, modelo, ano, km) values
 
 -- agendamento
 insert into agendamento (fk_usuario, data, hora, descricao, fk_status_agendamento, hora_retirada, observacao) values
-(1, '2025-06-09', '14:00:00', 'Revisão geral para viagem', 1, null, null);
+(1, '2025-09-10', '14:00:00', 'Revisão geral para viagem', 1, null, null);
 
 -- servico_agendado (vincular 2 serviços ao agendamento)
 insert into servico_agendado (fk_agendamento, fk_servico) values
@@ -199,6 +199,8 @@ insert into servico_agendado (fk_agendamento, fk_servico) values
 -- ---------- INÍCIO DOS SCRIPTS DE CONSULTAS E VIEWS (SELECTS) ---------- --
 
 select * from agendamento;
+select * from usuario;
+select * from servico;
 
 -- Listar todos os usuários com tipo e endereço
 create view vw_usuarios_completos as
@@ -227,8 +229,9 @@ left join logradouro l on e.fk_logradouro = l.id;
 select * from vw_usuarios_completos;
 
 -- Listar veículos de um usuário específico (ex: id = 1)
-create view vw_veiculos_usuario_1 as
+create view vw_veiculos_usuarios as
 select 
+    v.fk_usuario as id_usuario,
     v.id as id_veiculo,
     v.placa,
     v.marca,
@@ -236,10 +239,9 @@ select
     v.ano,
     v.km,
     v.foto
-from veiculo v
-where v.fk_usuario = 1;
+from veiculo v;
 
-select * from vw_veiculos_usuario_1;
+select * from vw_veiculos_usuarios;
 
 -- Agendamentos futuros de um usuário
 create view vw_agendamentos_futuros as
