@@ -95,6 +95,7 @@ create table agendamento (
 	fk_usuario int not null,
     data date not null,
     hora time not null,
+    veiculo varchar(100),
 	descricao varchar(256) not null,
 	fk_status_agendamento int not null,
     hora_retirada time,
@@ -180,19 +181,34 @@ insert into endereco (fk_usuario, fk_logradouro, nome_logradouro, numero_logrado
 -- (4, 'Alameda das Palmeiras', 78, 'Belo Horizonte', 'MG', 'Savassi', '30140071', null); Não descomentar.
 
 -- veiculo
-insert into veiculo (placa, fk_usuario, marca, modelo, ano, km) values
-('ABC1234', 1, 'Honda', 'CB500X', 2022, 12300),
-('REG5678', 2, 'Yamaha', 'Factor 150', 2020, 21500),
-('CAR9012', 3, 'Honda', 'CG 160', 2021, 14700);
+insert into veiculo (fk_usuario, placa, marca, modelo, ano, km) values
+(1, 'ABC1234', 'Honda', 'CB500X', 2022, 12300),
+(2, 'REG5678', 'Yamaha', 'Factor 150', 2020, 21500),
+(3, 'CAR9012', 'Honda', 'CG 160', 2021, 14700);
 
 -- agendamento
-insert into agendamento (fk_usuario, data, hora, descricao, fk_status_agendamento, hora_retirada, observacao) values
-(1, '2025-09-10', '14:00:00', 'Revisão geral para viagem', 1, null, null);
+insert into agendamento (fk_usuario, data, hora, veiculo, descricao, fk_status_agendamento, hora_retirada, observacao) values
+(1, '2025-10-10', '14:00:00', 'Honda CB500X', 'Revisão geral para viagem', 1, '16:00:00', null),
+(1, '2025-10-15', '09:30:00', 'Honda CB500X', 'Troca de óleo antes da viagem', 2, '14:00:00', 'Cliente com pressa'),
+(2, '2025-10-12', '11:00:00', 'Yamaha Factor 150', 'Revisão de freios', 1, '17:00:00', null),
+(3, '2025-10-18', '15:00:00', 'Honda CG 160', 'Revisão periódica 10.000km', 3, '17:00:00', 'Serviço finalizado sem observações'),
+(1, '2025-10-20', '10:00:00', 'Honda CB500X', 'Troca de filtros', 4, null, 'Cliente cancelou via telefone'),
+(2, '2025-10-25', '14:30:00', 'Yamaha Factor 150', 'Revisão completa antes de viagem longa', 2, '14:00:00', 'Cliente solicitou troca de óleo e revisão geral'),
+(3, '2025-09-28', '08:45:00', 'Honda CG 160', 'Verificação elétrica e manutenção corretiva', 1, '15:00:00', 'Possível falha no sistema de ignição');
+
 
 -- servico_agendado (vincular 2 serviços ao agendamento)
 insert into servico_agendado (fk_agendamento, fk_servico) values
-(1, 1), -- Manutenção Preventiva
-(1, 3); -- Revisão
+(1, 1), -- Troca de óleo
+(1, 3), -- Reparo nos freios
+(2, 1), -- Troca de óleo
+(3, 3), -- Reparo nos freios
+(4, 4), -- Revisão periódica
+(5, 2), -- Revisão de filtros
+(6, 1),  -- Troca de Óleo
+(6, 4),  -- Revisão Periódica
+(7, 2),  -- Revisão de Filtros
+(7, 3);  -- Reparo no Freio
 
 -- ---------- FIM DO SCRIPT DE POPULAÇÃO DE DADOS (INSERTS) ---------- --
 
@@ -200,78 +216,35 @@ insert into servico_agendado (fk_agendamento, fk_servico) values
 
 select * from agendamento;
 select * from usuario;
+select * from endereco;
 select * from servico;
 
--- Listar todos os usuários com tipo e endereço
-create view vw_usuarios_completos as
-select 
-    u.id as id_usuario,
-    u.nome,
-    u.sobrenome,
-    u.email,
-    u.telefone,
-    u.sexo,
-    u.data_nasc,
-    tu.tipo as tipo_usuario,
-    e.cidade,
-    e.estado,
-    e.bairro,
-    e.nome_logradouro,
-    e.numero_logradouro,
-    l.tipo as tipo_logradouro,
-    e.cep,
-    e.complemento
-from usuario u
-join tipo_usuario tu on u.fk_tipo_usuario = tu.id
-left join endereco e on e.fk_usuario = u.id
-left join logradouro l on e.fk_logradouro = l.id;
-
-select * from vw_usuarios_completos;
-
--- Listar veículos de um usuário específico (ex: id = 1)
-create view vw_veiculos_usuarios as
-select 
-    v.fk_usuario as id_usuario,
-    v.id as id_veiculo,
-    v.placa,
-    v.marca,
-    v.modelo,
-    v.ano,
-    v.km,
-    v.foto
-from veiculo v;
-
-select * from vw_veiculos_usuarios;
-
--- Agendamentos futuros de um usuário
-create view vw_agendamentos_futuros as
-select 
+create or replace view vw_agendamentos_clientes as
+select
     a.id as id_agendamento,
+    a.fk_usuario as id_usuario,
+    a.veiculo as nome_veiculo,
+    a.data as data_agendamento,
+    a.hora as hora_agendamento,
+    a.hora_retirada,
+    sa.status as status,
+    a.descricao,
+    a.observacao,
+    group_concat(s.nome separator ', ') as servicos
+from agendamento a
+join status_agendamento sa on sa.id = a.fk_status_agendamento
+left join servico_agendado sag on sag.fk_agendamento = a.id
+left join servico s on s.id = sag.fk_servico
+group by
+    a.id,
     a.fk_usuario,
-    u.nome,
+    a.veiculo,
     a.data,
     a.hora,
     a.hora_retirada,
-    a.descricao,
     sa.status,
-    a.observacao
-from agendamento a
-join usuario u on a.fk_usuario = u.id
-join status_agendamento sa on a.fk_status_agendamento = sa.id
-where a.data > current_date;
+    a.descricao,
+    a.observacao;
+show create view vw_agendamentos_clientes;
 
-select * from vw_agendamentos_futuros;
-
--- Serviços de um agendamento
-create view vw_servicos_por_agendamento as
-select 
-    sa.fk_agendamento,
-    s.nome as nome_servico,
-    s.descricao,
-    cs.nome as categoria,
-    s.eh_rapido
-from servico_agendado sa
-join servico s on sa.fk_servico = s.id
-join categoria_servico cs on s.fk_categoria_servico = cs.id;
-
-select * from vw_servicos_por_agendamento;
+select * from vw_agendamentos_clientes;
