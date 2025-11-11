@@ -188,14 +188,13 @@ insert into veiculo (fk_usuario, placa, marca, modelo, ano, km) values
 
 -- agendamento
 insert into agendamento (fk_usuario, data, hora, veiculo, descricao, fk_status_agendamento, hora_retirada, observacao) values
-(1, '2025-10-10', '14:00:00', 'Honda CB500X', 'Revisão geral para viagem', 1, '16:00:00', null),
-(1, '2025-10-15', '09:30:00', 'Honda CB500X', 'Troca de óleo antes da viagem', 2, '14:00:00', 'Cliente com pressa'),
-(2, '2025-10-12', '11:00:00', 'Yamaha Factor 150', 'Revisão de freios', 1, '17:00:00', null),
-(3, '2025-10-18', '15:00:00', 'Honda CG 160', 'Revisão periódica 10.000km', 3, '17:00:00', 'Serviço finalizado sem observações'),
-(1, '2025-10-20', '10:00:00', 'Honda CB500X', 'Troca de filtros', 4, null, 'Cliente cancelou via telefone'),
-(2, '2025-10-25', '14:30:00', 'Yamaha Factor 150', 'Revisão completa antes de viagem longa', 2, '14:00:00', 'Cliente solicitou troca de óleo e revisão geral'),
-(3, '2025-09-28', '08:45:00', 'Honda CG 160', 'Verificação elétrica e manutenção corretiva', 1, '15:00:00', 'Possível falha no sistema de ignição');
-
+(1, '2025-10-10', '14:00:00', 'Honda CB500X - ABC1234', 'Revisão geral para viagem', 1, '16:00:00', null),
+(1, '2025-10-15', '09:30:00', 'Honda CB500X - ABC1234', 'Troca de óleo antes da viagem', 2, '14:00:00', 'Cliente com pressa'),
+(2, '2025-10-12', '11:00:00', 'Yamaha Factor 150 - REG5678', 'Revisão de freios', 1, '17:00:00', null),
+(3, '2025-10-18', '15:00:00', 'Honda CG 160 - CAR9012', 'Revisão periódica 10.000km', 3, '17:00:00', 'Serviço finalizado sem observações'),
+(1, '2025-10-20', '10:00:00', 'Honda CB500X - ABC1234', 'Troca de filtros', 4, null, 'Cliente cancelou via telefone'),
+(2, '2025-10-25', '14:30:00', 'Yamaha Factor 150 - REG5678', 'Revisão completa antes de viagem longa', 2, '14:00:00', 'Cliente solicitou troca de óleo e revisão geral'),
+(3, '2025-09-28', '08:45:00', 'Honda CG 160 - CAR9012', 'Verificação elétrica e manutenção corretiva', 1, '15:00:00', 'Possível falha no sistema de ignição');
 
 -- servico_agendado (vincular 2 serviços ao agendamento)
 insert into servico_agendado (fk_agendamento, fk_servico) values
@@ -217,34 +216,101 @@ insert into servico_agendado (fk_agendamento, fk_servico) values
 select * from agendamento;
 select * from usuario;
 select * from endereco;
-select * from servico;
+select * from servico_agendado;
+select * from veiculo;
 
-create or replace view vw_agendamentos_clientes as
+create view vw_agendamentos_clientes AS
 select
     a.id as id_agendamento,
     a.fk_usuario as id_usuario,
+    CONCAT(u.nome, ' ', u.sobrenome) as nome_cliente,
     a.veiculo as nome_veiculo,
     a.data as data_agendamento,
-    a.hora as hora_agendamento,
-    a.hora_retirada,
+    TIME_FORMAT(a.hora, '%H:%i:%s') as hora_agendamento,
+    TIME_FORMAT(a.hora_retirada, '%H:%i:%s') as hora_retirada,
     sa.status as status,
     a.descricao,
     a.observacao,
-    group_concat(s.nome separator ', ') as servicos
-from agendamento a
-join status_agendamento sa on sa.id = a.fk_status_agendamento
-left join servico_agendado sag on sag.fk_agendamento = a.id
-left join servico s on s.id = sag.fk_servico
-group by
+    GROUP_CONCAT(s.nome SEPARATOR ', ') as servicos
+FROM agendamento a
+JOIN usuario u ON u.id = a.fk_usuario
+JOIN status_agendamento sa ON sa.id = a.fk_status_agendamento
+LEFT JOIN servico_agendado sag ON sag.fk_agendamento = a.id
+LEFT JOIN servico s ON s.id = sag.fk_servico
+GROUP BY
     a.id,
     a.fk_usuario,
+    u.nome,
+    u.sobrenome,
     a.veiculo,
     a.data,
     a.hora,
     a.hora_retirada,
     sa.status,
-    a.descricao,
-    a.observacao;
-show create view vw_agendamentos_clientes;
+    a.descricao;
 
 select * from vw_agendamentos_clientes;
+
+create or replace view vw_veiculos_clientes as
+select
+    v.id as id_veiculo,
+    v.fk_usuario as id_usuario,
+    concat(v.marca, ' ', v.modelo, ' - ', v.placa) as descricao_veiculo
+from veiculo v
+order by v.fk_usuario, v.marca, v.modelo;
+
+select * from vw_veiculos_clientes where id_usuario = 1;
+
+create or replace view vw_servicos_resumidos as
+select 
+    s.id as id_servico,
+    s.nome as nome_servico
+from servico s;
+
+select * from vw_servicos_resumidos;
+
+create or replace view vw_perfil_usuario as
+select
+    u.id as id_usuario,
+    concat(u.nome, ' ', u.sobrenome) as nome_completo,
+    u.email,
+    u.telefone,
+    
+    v.id as id_veiculo,
+    v.marca,
+    v.modelo,
+    v.ano,
+    v.km,
+    v.placa,
+    
+    -- contagem de agendamentos pendentes e concluídos
+    (
+        select count(*)
+        from agendamento a
+        join status_agendamento sa on sa.id = a.fk_status_agendamento
+        where a.fk_usuario = u.id and sa.status = 'Pendente'
+    ) as qtd_pendentes,
+
+    (
+        select count(*)
+        from agendamento a
+        join status_agendamento sa on sa.id = a.fk_status_agendamento
+        where a.fk_usuario = u.id and sa.status = 'Concluído'
+    ) as qtd_concluidos
+
+from usuario u
+left join veiculo v on v.fk_usuario = u.id
+group by
+    u.id,
+    v.id,
+    u.nome,
+    u.sobrenome,
+    u.email,
+    u.telefone,
+    v.marca,
+    v.modelo,
+    v.ano,
+    v.km,
+    v.placa;
+
+select * from vw_perfil_usuario where id_usuario = 1;
