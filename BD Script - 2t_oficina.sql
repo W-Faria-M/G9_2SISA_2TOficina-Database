@@ -255,7 +255,8 @@ create or replace view vw_veiculos_clientes as
 select
     v.id as id_veiculo,
     v.fk_usuario as id_usuario,
-    concat(v.marca, ' ', v.modelo, ' - ', v.placa) as descricao_veiculo
+    concat(v.marca, ' ', v.modelo, ' - ', v.placa) as descricao_veiculo,
+    v.km
 from veiculo v
 order by v.fk_usuario, v.marca, v.modelo;
 
