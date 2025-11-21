@@ -277,13 +277,6 @@ select
     u.email,
     u.telefone,
     
-    v.id as id_veiculo,
-    v.marca,
-    v.modelo,
-    v.ano,
-    v.km,
-    v.placa,
-    
     -- contagem de agendamentos pendentes e concluídos
     (
         select count(*)
@@ -307,11 +300,19 @@ group by
     u.nome,
     u.sobrenome,
     u.email,
-    u.telefone,
+    u.telefone;
+
+select * from vw_perfil_usuario where id_usuario = 1;
+
+create or replace view vw_veiculos_perfil as
+select
+    v.id id_veiculo,
+    v.fk_usuario id_usuario,
     v.marca,
     v.modelo,
     v.ano,
     v.km,
-    v.placa;
+    v.placa
+from veiculo v;
 
-select * from vw_perfil_usuario where id_usuario = 1;
+select * from vw_veiculos_perfil where id_usuario = 1;
