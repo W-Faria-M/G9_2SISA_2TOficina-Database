@@ -10,11 +10,6 @@ create table tipo_usuario (
 	tipo varchar(45) not null
 );
 
-create table logradouro (
-	id int auto_increment primary key,
-	tipo varchar(25) not null
-);
-
 create table status_agendamento (
 	id int auto_increment primary key,
 	status varchar(45) not null
@@ -32,21 +27,6 @@ create table usuario (
 	sexo varchar(45) check (sexo in ('Masculino', 'Feminino', 'Outro', 'Prefiro não informar')),
 	data_nasc date,
 	foreign key (fk_tipo_usuario) references tipo_usuario(id)
-);
-
-create table endereco (
-	id int auto_increment primary key,
-    fk_usuario int not null,
-	fk_logradouro int not null,
-	nome_logradouro varchar(45) not null,
-	numero_logradouro int not null,
-	cidade varchar(60) not null,
-	estado varchar(45) not null,
-	bairro varchar(45) not null,
-	cep char(8) not null,
-	complemento varchar(25),
-    foreign key (fk_usuario) references usuario(id),
-	foreign key (fk_logradouro) references logradouro(id)
 );
 
 create table veiculo (
@@ -156,13 +136,6 @@ insert into servico (fk_categoria_servico, nome, descricao, eh_rapido) values
 (2, 'Reparo no Freio', 'Diagnóstico e substituição do sistema de freios', 0),
 (4, 'Revisão Periódica 10.000km', 'Revisão completa recomendada pelo fabricante', 0);
 
--- logradouro
-insert into logradouro (tipo) values
-('Rua'),
-('Avenida'),
-('Travessa'),
-('Alameda');
-
 -- usuario
 insert into usuario (fk_tipo_usuario, nome, sobrenome, telefone, email, senha, data_cadastro, sexo, data_nasc) values
 (1, 'João', 'Silva', '11938472651', 'joao.silva@gmail.com', 'senha123', current_timestamp, null, null),
@@ -170,15 +143,6 @@ insert into usuario (fk_tipo_usuario, nome, sobrenome, telefone, email, senha, d
 (1, 'Carlos', 'Oliveira', '11984716295', 'carlos.oliveira@gmail.com', 'senha123', current_timestamp, 'Masculino', '1985-02-27'),
 (2, 'Diego', 'dos Santos', '11963574820', 'diego.2toficina@gmail.com', 'senha123', current_timestamp, 'Masculino', '2006-08-15'),
 (3, 'Gianluca', 'Macedo', '11927036481', 'gian.2toficina@gmail.com', 'senha123', current_timestamp, 'Masculino', '2005-05-19');
-
--- endereco
-insert into endereco (fk_usuario, fk_logradouro, nome_logradouro, numero_logradouro, cidade, estado, bairro, cep, complemento) values
-(2, 1, 'das Flores', 123, 'São Paulo', 'SP', 'Centro', '01001000', 'Apto 101'),
-(4, 2, 'Atlântica', 456, 'Rio de Janeiro', 'RJ', 'Copacabana', '22070000', 'Bloco B'),
-(3, 2, 'Paulista', 1000, 'São Paulo', 'SP', 'Bela Vista', '01310000', null),
-(1, 3, 'Independência', 45, 'Campinas', 'SP', 'Jardim Progresso', '13000000', 'Casa'),
-(5, 1, 'Engenheiro Mesquita Sampaio', 1024, 'São Paulo', 'SP', 'Morumbi', '04711000', null);
--- (4, 'Alameda das Palmeiras', 78, 'Belo Horizonte', 'MG', 'Savassi', '30140071', null); Não descomentar.
 
 -- veiculo
 insert into veiculo (fk_usuario, placa, marca, modelo, ano, km) values
@@ -215,7 +179,6 @@ insert into servico_agendado (fk_agendamento, fk_servico) values
 
 select * from agendamento;
 select * from usuario;
-select * from endereco;
 select * from servico_agendado;
 select * from veiculo;
 
