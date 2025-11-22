@@ -15,6 +15,11 @@ create table status_agendamento (
 	status varchar(45) not null
 );
 
+create table status_servico (
+	id int auto_increment primary key,
+	status varchar(45) not null
+);
+
 create table usuario (
 	id int auto_increment primary key,
 	fk_tipo_usuario int not null,
@@ -37,7 +42,6 @@ create table veiculo (
 	modelo varchar(45) not null,
 	ano smallint not null,
 	km double not null,
-	foto blob,
 	foreign key (fk_usuario) references usuario(id)
 );
 
@@ -52,7 +56,9 @@ create table servico (
 	nome varchar(45) not null,
 	descricao varchar(128) not null,
 	eh_rapido tinyint default 0 not null,
-	foreign key (fk_categoria_servico) references categoria_servico(id)
+    fk_status_servico int not null,
+	foreign key (fk_categoria_servico) references categoria_servico(id),
+    foreign key (fk_status_servico) references status_servico(id)
 );
 
 create table funcionamento (
@@ -109,6 +115,11 @@ insert into status_agendamento (status) values
 ('Concluído'),
 ('Cancelado');
 
+-- status_servico
+insert into status_servico (status) values
+('Ativo'),
+('Inativo');
+
 -- funcionamento
 insert into funcionamento (dia_semana, inicio_funcionamento, fim_funcionamento) values
 (1, '08:00:00','17:00:00'),
@@ -130,11 +141,12 @@ insert into categoria_servico (nome) values
 ('Revisão');
 
 -- servico
-insert into servico (fk_categoria_servico, nome, descricao, eh_rapido) values
-(1, 'Troca de Óleo', 'Substituição do óleo do motor e verificação do nível', 1),
-(1, 'Revisão de Filtros', 'Troca de filtro de ar, combustível e óleo', 0),
-(2, 'Reparo no Freio', 'Diagnóstico e substituição do sistema de freios', 0),
-(4, 'Revisão Periódica 10.000km', 'Revisão completa recomendada pelo fabricante', 0);
+insert into servico (fk_categoria_servico, nome, descricao, eh_rapido, fk_status_servico) values
+(1, 'Troca de Óleo', 'Substituição do óleo do motor e verificação do nível', 1, 1),
+(1, 'Revisão de Filtros', 'Troca de filtro de ar, combustível e óleo', 0, 1),
+(2, 'Reparo no Freio', 'Diagnóstico e substituição do sistema de freios', 0, 1),
+(4, 'Revisão Periódica 10.000km', 'Revisão completa recomendada pelo fabricante', 0, 1),
+(4, 'Revisão Elétrica', 'Checagem de toda parte elétrica da moto', 0, 1);
 
 -- usuario
 insert into usuario (fk_tipo_usuario, nome, sobrenome, telefone, email, senha, data_cadastro, sexo, data_nasc) values
@@ -228,10 +240,12 @@ select * from vw_veiculos_clientes where id_usuario = 1;
 create or replace view vw_servicos_resumidos as
 select 
     s.id as id_servico,
-    s.nome as nome_servico
-from servico s;
+    s.nome as nome_servico,
+    sts.id as status
+    from servico s
+    JOIN status_servico sts ON sts.id = s.fk_status_servico;
 
-select * from vw_servicos_resumidos;
+select * from vw_servicos_resumidos where status = 1;
 
 create or replace view vw_perfil_usuario as
 select
