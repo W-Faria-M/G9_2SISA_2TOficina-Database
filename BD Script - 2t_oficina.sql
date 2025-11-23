@@ -293,3 +293,63 @@ select
 from veiculo v;
 
 select * from vw_veiculos_perfil where id_usuario = 1;
+
+
+create or replace view vw_quantidade_servicos_por_mes AS
+SELECT 
+    YEAR(a.data) AS ano,
+    MONTH(a.data) AS mes,
+    s.id AS id_servico,
+    s.nome AS nome_servico,
+    COUNT(sa.id) AS total_servicos
+FROM agendamento a
+JOIN servico_agendado sa 
+    ON sa.fk_agendamento = a.id
+JOIN servico s
+    ON s.id = sa.fk_servico
+GROUP BY 
+    YEAR(a.data),
+    MONTH(a.data),
+    s.id,
+    s.nome
+ORDER BY 
+    ano,
+    mes,
+    nome_servico;
+    
+    select * from vw_quantidade_servicos_por_mes;
+    
+    
+Create Table Avatar(
+  id int auto_increment primary key,
+  fk_usuario int not null,
+  avatarStyle varchar(50),
+  topType varchar(50),
+  accessoriesType varchar(50),
+  facialHairType varchar(50),
+  clotheType varchar(50),
+  eyeType varchar(50),
+  eyebrowType varchar(50),
+  mouthType varchar(50),
+  skinColor varchar(50)
+);
+
+INSERT INTO Avatar (fk_usuario, avatarStyle, topType, accessoriesType, facialHairType, clotheType, eyeType, eyebrowType, mouthType, skinColor)
+VALUES
+(1, 'Transparent', 'NoHair', 'Blank', 'Blank', 'BlazerShirt', 'Default', 'Default', 'Smile', 'Light'),
+(2, 'Transparent', 'Hat', 'Sunglasses', 'BeardLight', 'Hoodie', 'Happy', 'RaisedExcited', 'Tongue', 'Tanned'),
+(3, 'Transparent', 'LongHairCurly', 'Round', 'Blank', 'ShirtCrewNeck', 'Wink', 'UpDownNatural', 'Default', 'Brown'),
+(4, 'Transparent', 'ShortHairTheCaesar', 'Prescription02', 'MoustacheFancy', 'BlazerSweater', 'Side', 'SadConcernedNatural', 'Serious', 'DarkBrown'),
+(5, 'Transparent', 'WinterHat3', 'Wayfarers', 'BeardMajestic', 'GraphicShirt', 'Surprised', 'UnibrowNatural', 'Twinkle', 'Yellow');
+
+INSERT INTO Avatar (fk_usuario, avatarStyle, topType, accessoriesType, facialHairType, clotheType, eyeType, eyebrowType, mouthType, skinColor)
+VALUES
+(1, 'Transparent', 'ShortHairShortFlat', 'Blank', 'Blank', 'BlazerShirt', 'Default', 'Default', 'Smile', 'Light'),
+(2, 'Transparent', 'Hat', 'Sunglasses', 'BeardLight', 'Hoodie', 'Happy', 'RaisedExcited', 'Tongue', 'Tanned'),
+(3, 'Transparent', 'LongHairCurly', 'Round', 'Blank', 'ShirtCrewNeck', 'Wink', 'UpDownNatural', 'Default', 'Brown'),
+(4, 'Transparent', 'ShortHairTheCaesar', 'Prescription02', 'MoustacheFancy', 'BlazerSweater', 'Side', 'SadConcernedNatural', 'Serious', 'DarkBrown'),
+(5, 'Transparent', 'WinterHat3', 'Wayfarers', 'BeardMajestic', 'GraphicShirt', 'Surprised', 'UnibrowNatural', 'Twinkle', 'Yellow');
+
+
+select * from avatar;
+    
