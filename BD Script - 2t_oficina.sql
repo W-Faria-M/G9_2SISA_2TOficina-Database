@@ -92,10 +92,25 @@ create table agendamento (
 
 create table servico_agendado (
 	id int primary key auto_increment,
-	fk_agendamento int,
-	fk_servico int,
+	fk_agendamento int not null,
+	fk_servico int not null,
 	foreign key (fk_agendamento) references agendamento(id),
-	foreign key (fk_servico) references servico(id)
+	foreign key (fk_servico) references servico(id),
+    unique (fk_agendamento, fk_servico)
+);
+
+Create Table avatar(
+  id int auto_increment primary key,
+  fk_usuario int not null,
+  avatarStyle varchar(50),
+  topType varchar(50),
+  accessoriesType varchar(50),
+  facialHairType varchar(50),
+  clotheType varchar(50),
+  eyeType varchar(50),
+  eyebrowType varchar(50),
+  mouthType varchar(50),
+  skinColor varchar(50)
 );
 
 -- ---------- FIM DO SCRIPT DE CRIAÇÃO DE TABELAS ---------- --
@@ -185,6 +200,20 @@ insert into servico_agendado (fk_agendamento, fk_servico) values
 (7, 2),  -- Revisão de Filtros
 (7, 3);  -- Reparo no Freio
 
+-- avatar
+
+insert into avatar (fk_usuario, avatarStyle, topType, accessoriesType, facialHairType, clotheType, eyeType, eyebrowType, mouthType, skinColor) VALUES
+(1, 'Transparent', 'NoHair', 'Blank', 'Blank', 'BlazerShirt', 'Default', 'Default', 'Smile', 'Light'),
+(2, 'Transparent', 'Hat', 'Sunglasses', 'BeardLight', 'Hoodie', 'Happy', 'RaisedExcited', 'Tongue', 'Tanned'),
+(3, 'Transparent', 'LongHairCurly', 'Round', 'Blank', 'ShirtCrewNeck', 'Wink', 'UpDownNatural', 'Default', 'Brown'),
+(4, 'Transparent', 'ShortHairTheCaesar', 'Prescription02', 'MoustacheFancy', 'BlazerSweater', 'Side', 'SadConcernedNatural', 'Serious', 'DarkBrown'),
+(5, 'Transparent', 'WinterHat3', 'Wayfarers', 'BeardMajestic', 'GraphicShirt', 'Surprised', 'UnibrowNatural', 'Twinkle', 'Yellow');
+-- (1, 'Transparent', 'ShortHairShortFlat', 'Blank', 'Blank', 'BlazerShirt', 'Default', 'Default', 'Smile', 'Light'),
+-- (2, 'Transparent', 'Hat', 'Sunglasses', 'BeardLight', 'Hoodie', 'Happy', 'RaisedExcited', 'Tongue', 'Tanned'),
+-- (3, 'Transparent', 'LongHairCurly', 'Round', 'Blank', 'ShirtCrewNeck', 'Wink', 'UpDownNatural', 'Default', 'Brown'),
+-- (4, 'Transparent', 'ShortHairTheCaesar', 'Prescription02', 'MoustacheFancy', 'BlazerSweater', 'Side', 'SadConcernedNatural', 'Serious', 'DarkBrown'),
+-- (5, 'Transparent', 'WinterHat3', 'Wayfarers', 'BeardMajestic', 'GraphicShirt', 'Surprised', 'UnibrowNatural', 'Twinkle', 'Yellow')
+
 -- ---------- FIM DO SCRIPT DE POPULAÇÃO DE DADOS (INSERTS) ---------- --
 
 -- ---------- INÍCIO DOS SCRIPTS DE CONSULTAS E VIEWS (SELECTS) ---------- --
@@ -193,8 +222,10 @@ select * from agendamento;
 select * from usuario;
 select * from servico_agendado;
 select * from veiculo;
+select * from servico;
+select * from avatar;
 
-create view vw_agendamentos_clientes AS
+create or replace view vw_agendamentos_clientes AS
 select
     a.id as id_agendamento,
     a.fk_usuario as id_usuario,
@@ -270,10 +301,8 @@ select
     ) as qtd_concluidos
 
 from usuario u
-left join veiculo v on v.fk_usuario = u.id
 group by
     u.id,
-    v.id,
     u.nome,
     u.sobrenome,
     u.email,
@@ -294,6 +323,21 @@ from veiculo v;
 
 select * from vw_veiculos_perfil where id_usuario = 1;
 
+create or replace view vw_servicos_completos as
+select
+    s.id as id_servico,
+    s.nome as nome_servico,
+    cs.nome as nome_categoria,
+    s.descricao,
+    s.eh_rapido,
+    ss.status as status_atual
+from servico s
+join categoria_servico cs 
+    on cs.id = s.fk_categoria_servico
+join status_servico ss
+    on ss.id = s.fk_status_servico;
+
+select * from vw_servicos_completos;
 
 create or replace view vw_quantidade_servicos_por_mes AS
 SELECT 
@@ -318,38 +362,3 @@ ORDER BY
     nome_servico;
     
     select * from vw_quantidade_servicos_por_mes;
-    
-    
-Create Table Avatar(
-  id int auto_increment primary key,
-  fk_usuario int not null,
-  avatarStyle varchar(50),
-  topType varchar(50),
-  accessoriesType varchar(50),
-  facialHairType varchar(50),
-  clotheType varchar(50),
-  eyeType varchar(50),
-  eyebrowType varchar(50),
-  mouthType varchar(50),
-  skinColor varchar(50)
-);
-
-INSERT INTO Avatar (fk_usuario, avatarStyle, topType, accessoriesType, facialHairType, clotheType, eyeType, eyebrowType, mouthType, skinColor)
-VALUES
-(1, 'Transparent', 'NoHair', 'Blank', 'Blank', 'BlazerShirt', 'Default', 'Default', 'Smile', 'Light'),
-(2, 'Transparent', 'Hat', 'Sunglasses', 'BeardLight', 'Hoodie', 'Happy', 'RaisedExcited', 'Tongue', 'Tanned'),
-(3, 'Transparent', 'LongHairCurly', 'Round', 'Blank', 'ShirtCrewNeck', 'Wink', 'UpDownNatural', 'Default', 'Brown'),
-(4, 'Transparent', 'ShortHairTheCaesar', 'Prescription02', 'MoustacheFancy', 'BlazerSweater', 'Side', 'SadConcernedNatural', 'Serious', 'DarkBrown'),
-(5, 'Transparent', 'WinterHat3', 'Wayfarers', 'BeardMajestic', 'GraphicShirt', 'Surprised', 'UnibrowNatural', 'Twinkle', 'Yellow');
-
-INSERT INTO Avatar (fk_usuario, avatarStyle, topType, accessoriesType, facialHairType, clotheType, eyeType, eyebrowType, mouthType, skinColor)
-VALUES
-(1, 'Transparent', 'ShortHairShortFlat', 'Blank', 'Blank', 'BlazerShirt', 'Default', 'Default', 'Smile', 'Light'),
-(2, 'Transparent', 'Hat', 'Sunglasses', 'BeardLight', 'Hoodie', 'Happy', 'RaisedExcited', 'Tongue', 'Tanned'),
-(3, 'Transparent', 'LongHairCurly', 'Round', 'Blank', 'ShirtCrewNeck', 'Wink', 'UpDownNatural', 'Default', 'Brown'),
-(4, 'Transparent', 'ShortHairTheCaesar', 'Prescription02', 'MoustacheFancy', 'BlazerSweater', 'Side', 'SadConcernedNatural', 'Serious', 'DarkBrown'),
-(5, 'Transparent', 'WinterHat3', 'Wayfarers', 'BeardMajestic', 'GraphicShirt', 'Surprised', 'UnibrowNatural', 'Twinkle', 'Yellow');
-
-
-select * from avatar;
-    
