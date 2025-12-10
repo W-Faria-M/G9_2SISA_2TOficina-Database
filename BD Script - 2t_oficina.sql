@@ -29,8 +29,6 @@ create table usuario (
 	email varchar(256) unique not null,
 	senha varchar(128) not null,
 	data_cadastro timestamp not null,
-	sexo varchar(45) check (sexo in ('Masculino', 'Feminino', 'Outro', 'Prefiro não informar')),
-	data_nasc date,
 	foreign key (fk_tipo_usuario) references tipo_usuario(id)
 );
 
@@ -164,12 +162,12 @@ insert into servico (fk_categoria_servico, nome, descricao, eh_rapido, fk_status
 (4, 'Revisão Elétrica', 'Checagem de toda parte elétrica da moto', 0, 1);
 
 -- usuario
-insert into usuario (fk_tipo_usuario, nome, sobrenome, telefone, email, senha, data_cadastro, sexo, data_nasc) values
-(1, 'João', 'Silva', '11938472651', 'joao.silva@gmail.com', 'senha123', current_timestamp, null, null),
-(1, 'Regina', 'Castro', '11957843260', 'regina.castro@gmail.com', 'senha123', current_timestamp, 'Feminino', '1992-08-15'),
-(1, 'Carlos', 'Oliveira', '11984716295', 'carlos.oliveira@gmail.com', 'senha123', current_timestamp, 'Masculino', '1985-02-27'),
-(2, 'Diego', 'dos Santos', '11963574820', 'diego.2toficina@gmail.com', 'senha123', current_timestamp, 'Masculino', '2006-08-15'),
-(3, 'Gianluca', 'Macedo', '11927036481', 'gian.2toficina@gmail.com', 'senha123', current_timestamp, 'Masculino', '2005-05-19');
+insert into usuario (fk_tipo_usuario, nome, sobrenome, telefone, email, senha, data_cadastro) values
+(1, 'João', 'Silva', '11938472651', 'joao.silva@gmail.com', 'senha123', current_timestamp),
+(1, 'Regina', 'Castro', '11957843260', 'regina.castro@gmail.com', 'senha123', current_timestamp),
+(1, 'Carlos', 'Oliveira', '11984716295', 'carlos.oliveira@gmail.com', 'senha123', current_timestamp),
+(2, 'Diego', 'dos Santos', '11963574820', 'diego.2toficina@gmail.com', 'senha123', current_timestamp),
+(3, 'Gianluca', 'Macedo', '11927036481', 'gian.2toficina@gmail.com', 'senha123', current_timestamp);
 
 -- veiculo
 insert into veiculo (fk_usuario, placa, marca, modelo, ano, km) values
